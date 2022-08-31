@@ -1,0 +1,6 @@
+{
+  "appId": "com.andrewmelbourne.txpay",
+  "appName": "txpay",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}
