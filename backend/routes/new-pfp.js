@@ -1,4 +1,4 @@
-const User = require("../models/user.js");
+const User = require("../models/UserModel")
 const { verifyJWT } = require("../scripts/tokens.js");
 const {
   uploadImagesCloudflare,

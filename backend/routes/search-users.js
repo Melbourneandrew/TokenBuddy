@@ -1,4 +1,4 @@
-const User = require("../models/user.js");
+const User = require("../models/UserModel")
 
 module.exports = function (router) {
   router.get("/user/search", searchUsers);

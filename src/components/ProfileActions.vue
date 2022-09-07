@@ -3,12 +3,12 @@
     <h2 class="actions-title">Actions</h2>
     <div class="spacer"></div>
     <div v-for="(action, index) in actions">
-      <div
-        class="action"
-        v-touch
-      >
+      <div class="action" v-touch @click="action.action()">
         <p class="action-name">{{ action.name }}</p>
-        <RightArrowIcon class="arrow" :size="24"></RightArrowIcon>
+        <RightArrowIcon
+          class="arrow"
+          :size="24"
+        ></RightArrowIcon>
       </div>
     </div>
   </div>
@@ -17,7 +17,9 @@
 <script setup>
 import { ref } from "vue";
 import RightArrowIcon from "./icons/RightArrowIcon.vue";
-const isActive = ref(-1);
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 const actions = [
   {
     name: "View Transactions",
@@ -40,36 +42,20 @@ const actions = [
   {
     name: "Linked bank accounts",
     action: function () {
-      console.log(this.name);
+      console.log("test");
+    },
+  },
+  {
+    name: "Sign out",
+    action: function () {
+      router.push({ path: "/new-user" });
     },
   },
 ];
-
-function performAction(index) {
-  return function () {
-    actions[index].action();
-  };
-}
-function setActive(index) {
-  //   isActive.value = index;
-  //   setTimeout(() => (isActive.value = -1), 15);
-  return function () {
-    isActive.value = index;
-    console.log(index);
-  };
-}
-function unsetActive(index) {
-  return function () {
-    isActive.value = -1;
-  };
-}
-function something() {
-  console.log("");
-}
 </script>
 <style scoped>
-.actions-list{
-    margin-top: 50px;
+.actions-list {
+  margin-top: 50px;
 }
 .action {
   display: flex;
@@ -86,11 +72,9 @@ function something() {
   text-align: left;
   padding-left: 10px;
 }
-.arrow{
-    align-self: center;
-    justify-self: end;
-    margin-left: auto;
+.arrow {
+  align-self: center;
+  justify-self: end;
+  margin-left: auto;
 }
-
-
 </style>

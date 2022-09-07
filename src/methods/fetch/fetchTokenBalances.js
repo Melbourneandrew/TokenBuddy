@@ -6,13 +6,9 @@ import {
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import getTokenMap from "../get/getTokenMap";
 import RPCEndpoints from "../RPCEndpoints";
-
-export default async function fetchTokenBalances(
-  pubkey,
-  networkSlug
-) {
-  const rpcEndpoint = RPCEndpoints[networkSlug];
-
+const rpcEndpoint =
+  RPCEndpoints[import.meta.env.VITE_SOLANA_NETWORK_SLUG];
+export default async function fetchTokenBalances(pubkey) {
   // console.log("Connecting to solana for token balance check");
   const solanaConnection = new Connection(rpcEndpoint);
   const filters = [
@@ -31,15 +27,12 @@ export default async function fetchTokenBalances(
   get token accounts for pubkey from solana RPC
   */
   // console.log("Getting parsed program accounts");
-  console.log(TOKEN_PROGRAM_ID);
-  console.log(filters);
   const accounts =
     await solanaConnection.getParsedProgramAccounts(
       TOKEN_PROGRAM_ID, //SPL Token Program, new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
       { filters: filters }
     );
   // console.log("Got accounts");
-  console.log(accounts);
   /*
   Sort the parsed accounts for only the accounts relevant to this
   application. Accounts that are empty or hold NFT's are not 
@@ -52,10 +45,10 @@ export default async function fetchTokenBalances(
     if (account.tokenAmount.amount == "0") continue;
     //accounts with zero decimals (NFT) are irrelevant
     if (account.tokenAmount.decimals == 0) continue;
-
     relevantAccounts.push({
       mint: account.mint,
       balance: account.tokenAmount.uiAmount,
+      accountPk: accounts[i].pubkey.toBase58(),
     });
   }
   /*
@@ -66,9 +59,7 @@ export default async function fetchTokenBalances(
   re-fetched for updates.
   */
   // console.log("Getting token map");
-  const tokenMap = await getTokenMap(networkSlug);
-  console.log(tokenMap);
-
+  const tokenMap = await getTokenMap();
   /*
   At this stage we assemble the relevant information.
   The balance of each token will be combined with the data for
@@ -80,6 +71,7 @@ export default async function fetchTokenBalances(
       balance: account.balance,
       tokenInfo: tokenMap.get(account.mint),
       mint: account.mint,
+      accountPk: account.accountPk,
     });
 
   //add sol token to token balances

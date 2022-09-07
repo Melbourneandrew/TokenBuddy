@@ -2,7 +2,7 @@
   <Modal @close="$emit('close')">
     <h2>You want to {{ action }}</h2>
     <UserListItem class="user" :user="user"></UserListItem>
-    <h1>${{ ammount }}</h1>
+    <h1>{{currencySymbol}} {{ ammount }}</h1>
     <div v-if="showLoadingWheel" class="lds-dual-ring"></div>
     <button v-touch v-else @click="$emit('confirm')">
       <p>Confirm</p>
@@ -18,12 +18,14 @@ const props = defineProps({
   selectedUser: Object,
   action: String,
   ammount: String,
-  showLoadingWheel: Boolean
+  loading: Boolean,
+  currencySymbol: String,
 });
 const user = computed(() => props.selectedUser);
 const action = computed(() => props.action);
 const ammount = computed(() => props.ammount);
-const showLoadingWheel = computed(() => props.showLoadingWheel)
+const showLoadingWheel = computed(() => props.loading);
+const currencySymbol = computed(() => props.currencySymbol);
 </script>
 <style scoped>
 .user {

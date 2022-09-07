@@ -71,7 +71,7 @@ const activeIcon = ref("");
   width: 100%;
   height: fit-content;
   padding: 5px;
-  padding-bottom: 13px;
+  padding-bottom: 25px;
   display: flex;
   flex-direction: row;
   background-color: white;

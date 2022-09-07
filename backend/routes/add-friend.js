@@ -1,5 +1,5 @@
 const { verifyJWT } = require("../scripts/tokens.js");
-const User = require("../models/user.js");
+const User = require("../models/UserModel")
 const { ObjectId } = require("mongodb");
 
 module.exports = function (router) {

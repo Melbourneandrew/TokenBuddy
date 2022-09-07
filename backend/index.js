@@ -13,7 +13,7 @@ mongoose.connect(
 		console.log("Connected to MongoDB");
 	}
 );
-
+global.mongoose = mongoose;
 const app = express();
 app.use(bodyParser.json());
 app.use(cookieParser());

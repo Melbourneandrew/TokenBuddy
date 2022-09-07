@@ -15,7 +15,8 @@
     <div class="transactions">
       <h2>Transactions:</h2>
       <div class="spacer"></div>
-      <div class="transaction-list">
+      <div v-if="showLoadingWheel" class="lds-dual-ring"></div>
+      <div v-else class="transaction-list">
         <div
           v-for="(transaction, index) in transactions"
           :key="index"
@@ -33,12 +34,12 @@
             <div class="ammount">
               <p
                 v-bind:class="{
-                  'ammount-label green': transaction.paidYou,
-                  'ammount-label red': !transaction.paidYou,
+                  'ammount-label green': transaction.incoming,
+                  'ammount-label red': !transaction.incoming,
                 }"
               >
-                <span v-if="transaction.paidYou">+</span>
-                <span v-else>-</span>${{ transaction.ammount }}
+                <span v-if="transaction.incoming">+</span>
+                <span v-else>-</span>{{transaction.tokenSymbol}} {{ transaction.tokenAmmount }}
               </p>
             </div>
           </div>
@@ -49,44 +50,36 @@
 </template>
 
 <script setup>
-import pfp1 from "../assets/cryptopunk3.jpeg";
-import pfp2 from "../assets/cryptopunk1.jpeg";
-import pfp3 from "../assets/bayc1.jpeg";
-import pfp4 from "../assets/cryptopunk4.png";
-import pfp5 from "../assets/cryptopunk2.jpeg";
+import fetchTransactions from "../methods/fetch/fetchTransactions";
+import { ref } from "vue";
+import getStoredUserInfo from "../methods/get/getStoredUserInfo";
 
-const transactions = [
-  {
-    pfp: pfp1,
-    displayName: "Anthony Vern",
-    paidYou: false,
-    ammount: "45",
-  },
-  {
-    pfp: pfp2,
-    displayName: "Carson Droner",
-    paidYou: false,
-    ammount: "7.40",
-  },
-  {
-    pfp: pfp3,
-    displayName: "Sarah Miller",
-    paidYou: true,
-    ammount: "110",
-  },
-  {
-    pfp: pfp4,
-    displayName: "Usman Alam",
-    paidYou: false,
-    ammount: "12.22",
-  },
-  {
-    pfp: pfp5,
-    displayName: "Brodie Eldred",
-    paidYou: false,
-    ammount: "50",
-  },
-];
+const transactions = ref([]);
+const showLoadingWheel = ref(false);
+assembleTxList();
+async function assembleTxList() {
+  const client = await getStoredUserInfo();
+  const fetchTx = await fetchTransactions();
+  const txs = fetchTx.data.txs;
+  console.log(txs);
+  //designate transactions as outgoing or incoming
+  for (let tx of txs) {
+    console.log(tx);
+    //client is reciever
+    if (tx.reciever._id == client._id) {
+      tx.incoming = true;
+      tx.pfp = tx.sender.pfp;
+      tx.displayName = tx.sender.displayName;
+    }
+    //client is sender
+    if (tx.sender._id == client._id) {
+      tx.incoming = false;
+      tx.pfp = tx.reciever.pfp;
+      tx.displayName = tx.reciever.displayName;
+    }
+  }
+  transactions.value = txs.reverse();
+}
 </script>
 
 <style scoped>
@@ -133,6 +126,8 @@ h2 {
   width: 100%;
   padding-left: 5px;
   padding-right: 5px;
+  padding-top: 10px;
+  margin-bottom: 50px;
 }
 .transaction {
   width: 100%;
@@ -144,6 +139,7 @@ h2 {
   align-self: center;
   margin-left: 10px;
   font-weight: bold;
+  font-size: 18px;
 }
 .ammount {
   align-self: center;
@@ -160,10 +156,4 @@ h2 {
   color: green;
 }
 
-.avatar {
-  vertical-align: middle;
-  width: 65px;
-  height: 65px;
-  border-radius: 50%;
-}
 </style>

@@ -2,23 +2,16 @@ import { Preferences } from "@capacitor/preferences";
 import { Capacitor } from "@capacitor/core";
 import fetchTokenBalances from "../fetch/fetchTokenBalances";
 import storeTokenBalances from "../store/storeTokenBalances";
-
+import RPCEndpoints from "../RPCEndpoints";
+const rpcEndpoint =
+  RPCEndpoints[import.meta.env.VITE_SOLANA_NETWORK_SLUG];
 //how long stored token balance is valid for
 const MINS_VALID = 1;
 const MS_PER_MIN = 1000 * 60;
 const MS_VALID = MS_PER_MIN * MINS_VALID;
 
-export default async function getTokenBalances(
-  pubkey,
-  networkSlug
-) {
-  var rpcEndpoint;
-  if (networkSlug == "devnet")
-    rpcEndpoint = "https://api.devnet.solana.com";
-  else if (networkSlug == "mainnet-beta")
-    rpcEndpoint = "https://api.mainnet-beta.solana.com";
-  else throw "Invalid network slug";
-
+export default async function getTokenBalances(pubkey) {
+  if(pubkey == null) throw "No pubkey provided to getTokenBalances"
   const isNative = Capacitor.isNativePlatform();
   var tokenBalances;
   if (isNative) tokenBalances = await getTokenBalancesNative();
@@ -27,10 +20,7 @@ export default async function getTokenBalances(
   //no stored token balances
   if (tokenBalances == null) {
     console.log("Stored token balances is null. Fetching...");
-    const newTokenBals = await fetchTokenBalances(
-      pubkey,
-      networkSlug
-    );
+    const newTokenBals = await fetchTokenBalances(pubkey);
     await storeTokenBalances(newTokenBals);
     return newTokenBals;
   }
@@ -42,15 +32,12 @@ export default async function getTokenBalances(
     console.log(
       "Stored token balances out of date. Fetching..."
     );
-    const newTokenBals = await fetchTokenBalances(
-      pubkey,
-      networkSlug
-    );
+    const newTokenBals = await fetchTokenBalances(pubkey);
     await storeTokenBalances(newTokenBals);
     return newTokenBals;
   }
-  console.log("Got stored token balances")
-  return tokenBalances.tokens
+  console.log("Got stored token balances");
+  return tokenBalances.tokens;
 }
 
 async function getTokenBalancesNative() {

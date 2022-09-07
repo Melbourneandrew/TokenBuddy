@@ -1,3 +1,5 @@
+/*This method is called in sendTransaction.js to send SOL
+tokens. Split logic from sending SPL tokens as the two work differently */
 import {
   Connection,
   Transaction,
@@ -9,23 +11,24 @@ import {
 import getStoredKeypair from "./get/getStoredKeypair";
 import RPCEndpoints from "./RPCEndpoints";
 
-export default async function sendTokens(
+const rpcEndpoint =
+  RPCEndpoints[import.meta.env.VITE_SOLANA_NETWORK_SLUG];
+
+export default async function sendSol(
   recipientKey,
-  ammount,
-  networkSlug
+  tokenAmmount
 ) {
-  const rpcEndpoint = RPCEndpoints[networkSlug];
   const sender = await getStoredKeypair();
   const recieverPk = new PublicKey(recipientKey);
-  console.log(sender.publicKey)
-  console.log(recieverPk)
-  console.log(LAMPORTS_PER_SOL * ammount)
+  console.log(sender.publicKey);
+  console.log(recieverPk);
+  console.log(LAMPORTS_PER_SOL * tokenAmmount);
   const connection = new Connection(rpcEndpoint);
   const transaction = new Transaction().add(
     SystemProgram.transfer({
       fromPubkey: sender.publicKey,
       toPubkey: recieverPk,
-      lamports: LAMPORTS_PER_SOL * ammount,
+      lamports: LAMPORTS_PER_SOL * tokenAmmount,
     })
   );
 
@@ -35,5 +38,5 @@ export default async function sendTokens(
     [sender]
   );
 
-  return console.log(signature);
+  return signature;
 }

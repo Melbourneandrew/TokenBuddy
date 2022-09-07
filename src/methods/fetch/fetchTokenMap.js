@@ -1,6 +1,6 @@
 import axios from "axios";
 import { TokenListProvider } from "@solana/spl-token-registry";
-
+const slug = import.meta.env.VITE_SOLANA_NETWORK_SLUG;
 export default async function fetchTokenMap(slug) {
   /*
   Fetch list of registered tokens along with their data.
@@ -20,6 +20,6 @@ export default async function fetchTokenMap(slug) {
     });
     return map;
   }, new Map());
-  
+
   return tokenMap;
 }

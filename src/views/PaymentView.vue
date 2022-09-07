@@ -1,5 +1,13 @@
 <template>
-  <div class="pay-ammount">${{ numberDisplay }}</div>
+  <div class="pay-ammount">
+    <span
+      :class="{
+        currencySymbolDollar: currencySymbolDisplay == '$',
+        currencySymbol: currencySymbolDisplay != '$',
+      }"
+      >{{ currencySymbolDisplay }} </span
+    >{{ numberDisplay }}
+  </div>
   <button
     class="currency-select"
     v-touch
@@ -48,11 +56,15 @@
     @close="showUserSelect = false"
   ></UserSelect>
   <TxConfirmModal
-    @close="showConfirmModal = false"
+    @close="
+      showConfirmModal = false;
+      showLoadingWheel = false;
+    "
     @confirm="performAction"
     :selectedUser="selectedUser"
     :action="selectedAction"
     :ammount="numberDisplay"
+    :currencySymbol="currencySymbol"
     :loading="showLoadingWheel"
     v-if="showConfirmModal"
   ></TxConfirmModal>
@@ -73,11 +85,13 @@ import searchUsers from "../methods/searchUsers";
 import fetchFriends from "../methods/fetch/fetchFriends";
 import TxConfirmModal from "../components/TxConfirmModal.vue";
 import TokenSelectModal from "../components/TokenSelectModal.vue";
-import web3SendSOL from "../methods/web3SendSOL";
+import sendTransaction from "../methods/sendTransaction";
+import web3SendSPL from "../methods/web3SendSPL";
 //these are the values that will be used when the transaction is comitted
 let recipient, transactionToken, transactionAmmount;
 //Functions to handle the number pad
 const numberDisplay = ref("0");
+const currencySymbolDisplay = ref("$");
 var decimal = 0;
 var moneyNumber = 0;
 function numPress(num) {
@@ -139,6 +153,7 @@ const tokenBalance = ref("");
 async function changeCurrency(token) {
   console.log(token);
   currencySymbol.value = token.tokenInfo.symbol;
+  currencySymbolDisplay.value = token.tokenInfo.symbol;
   tokenBalance.value = token.balance;
   transactionToken = token;
   showTokenSelectModal.value = false;
@@ -175,6 +190,7 @@ async function userSelected(user) {
 }
 async function performAction() {
   console.log("Perform action");
+  showLoadingWheel.value = true;
   recipient = selectedUser.value;
   transactionAmmount = +numberDisplay.value;
   if (selectedAction.value == "PAY") {
@@ -186,16 +202,18 @@ async function performAction() {
 }
 async function payAction() {
   console.log(recipient, transactionAmmount, transactionToken);
-  if (transactionToken.mint == "SOL") {
-    showLoadingWheel.value = true;
-    await web3SendSOL(
-      recipient.pubkey,
-      transactionAmmount,
-      "devnet"
-    );
-    showConfirmModal.value = false;
-    showLoadingWheel.value = false;
-  }
+  console.log(transactionToken);
+  showLoadingWheel.value = true;
+  await sendTransaction(
+    recipient.pubkey,
+    transactionToken.mint,
+    transactionToken.tokenInfo.name,
+    transactionToken.tokenInfo.symbol,
+    transactionAmmount
+  );
+
+  showConfirmModal.value = false;
+  showLoadingWheel.value = false;
 }
 </script>
 
@@ -204,6 +222,14 @@ async function payAction() {
   font-size: 80px;
   font-weight: bold;
   margin-top: 80px;
+}
+.currencySymbol {
+  font-size: 30px;
+  margin-right: 10px;
+  margin-bottom: 20px;
+}
+.currencySymbolDollar {
+  font-size: 80px;
 }
 .currency-select {
   font-size: 14px;
